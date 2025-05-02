@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #6EE7B7 0%, #3B82F6 100%);
+            background-attachment: fixed;
+        }
+        .task-enter {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateY(-10px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        .task-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .container {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        #gameModal {
+            display: none;
+            background: rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="container rounded-2xl shadow-2xl w-full max-w-lg p-8">
+        <!-- Clock -->
+        <div class="text-center mb-6">
+            <div id="clock" class="text-2xl font-semibold text-gray-900"></div>
+        </div>
+
+        <h1 class="text-3xl font-bold text-gray-900 mb-8 text-center">To-Do List</h1>
+        
+        <!-- Input Form -->
+        <div class="flex mb-8">
+            <input 
+                type="text" 
+                id="taskInput" 
+                placeholder="Add a new task..." 
+                class="flex-1 p-4 rounded-l-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm"
+            >
+            <button 
+                onclick="addTask()" 
+                class="bg-indigo-600 text-white p-4 rounded-r-xl hover:bg-indigo-700 transition duration-300 font-medium"
+            >
+                Add
+            </button>
+        </div>
+
+        <!-- Task List -->
+        <ul id="taskList" class="space-y-4"></ul>
+    </div>
+
+    <!-- Game Modal -->
+    <div id="gameModal" class="fixed inset-0 flex items-center justify-center">
+        <div class="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">🎉 Number Guessing Game</h2>
+            <p class="text-gray-600 mb-4">All tasks done! Guess a number between 1 and 100.</p>
+            <input 
+                type="number" 
+                id="guessInput" 
+                placeholder="Your guess" 
+                class="w-full p-3 mb-4 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+            <p id="gameFeedback" class="text-gray-600 mb-4"></p>
+            <div class="flex justify-end space-x-3">
+                <button 
+                    onclick="makeGuess()" 
+                    class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+                >
+                    Guess
+                </button>
+                <button 
+                    onclick="closeGame()" 
+                    class="bg-gray-300 text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-400 transition"
+                >
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load tasks from localStorage
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        let gameNumber = Math.floor(Math.random() * 100) + 1;
+        let attempts = 0;
+
+        // Clock functionality
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            document.getElementById('clock').textContent = timeString;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Render tasks on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTasks();
+        });
+
+        function addTask() {
+            const taskInput = document.getElementById('taskInput');
+            const taskText = taskInput.value.trim();
+
+            if (taskText === '') {
+                alert('Please enter a task!');
+                return;
+            }
+
+            const task = {
+                id: Date.now(),
+                text: taskText,
+                completed: false
+            };
+
+            tasks.push(task);
+            saveTasks();
+            renderTasks();
+            taskInput.value = '';
+            document.getElementById('gameModal').style.display = 'none';
+        }
+
+        function toggleTask(id) {
+            tasks = tasks.map(task => 
+                task.id === id ? { ...task, completed: !task.completed } : task
+            );
+            saveTasks();
+            renderTasks();
+        }
+
+        function deleteTask(id) {
+            tasks = tasks.filter(task => task.id !== id);
+            saveTasks();
+            renderTasks();
+        }
+
+        function saveTasks() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        function renderTasks() {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+
+            tasks.forEach(task => {
+                const li = document.createElement('li');
+                li.className = 'flex items-center justify-between p-4 bg-white rounded-xl shadow-sm task-enter task-hover transition duration-200';
+                
+                li.innerHTML = `
+                    <div class="flex items-center">
+                        <input 
+                            type="checkbox" 
+                            ${task.completed ? 'checked' : ''} 
+                            onchange="toggleTask(${task.id})"
+                            class="h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer"
+                        >
+                        <span class="ml-3 text-lg ${task.completed ? 'line-through text-gray-400' : 'text-gray-900'}">
+                            ${task.text}
+                        </span>
+                    </div>
+                    <button 
+                        onclick="deleteTask(${task.id})"
+                        class="text-red-500 hover:text-red-600 font-medium transition"
+                    >
+                        Delete
+                    </button>
+                `;
+
+                taskList.appendChild(li);
+            });
+
+            // Show game modal if no tasks
+            if (tasks.length === 0) {
+                document.getElementById('gameModal').style.display = 'flex';
+                resetGame();
+            }
+        }
+
+        // Game logic
+        function makeGuess() {
+            const guessInput = document.getElementById('guessInput');
+            const guess = parseInt(guessInput.value);
+            const feedback = document.getElementById('gameFeedback');
+            attempts++;
+
+            if (isNaN(guess) || guess < 1 || guess > 100) {
+                feedback.textContent = 'Please enter a number between 1 and 100!';
+                return;
+            }
+
+            if (guess === gameNumber) {
+                feedback.textContent = `Congratulations! You guessed it in ${attempts} attempts!`;
+                feedback.className = 'text-green-600 mb-4';
+            } else if (guess < gameNumber) {
+                feedback.textContent = 'Too low! Try a higher number.';
+            } else {
+                feedback.textContent = 'Too high! Try a lower number.';
+            }
+
+            guessInput.value = '';
+        }
+
+        function resetGame() {
+            gameNumber = Math.floor(Math.random() * 100) + 1;
+            attempts = 0;
+            document.getElementById('gameFeedback').textContent = '';
+            document.getElementById('guessInput').value = '';
+        }
+
+        function closeGame() {
+            document.getElementById('gameModal').style.display = 'none';
+            resetGame();
+        }
+
+        // Add task on Enter key press
+        document.getElementById('taskInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addTask();
+            }
+        });
+
+        // Guess on Enter key press
+        document.getElementById('guessInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                makeGuess();
+            }
+        });
+    </script>
+</body>
+</html>
