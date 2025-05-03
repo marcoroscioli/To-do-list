@@ -11,6 +11,7 @@
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #6EE7B7 0%, #3B82F6 100%);
             background-attachment: fixed;
+            transition: background-color 0.3s ease;
         }
         .task-enter {
             animation: slideIn 0.3s ease-out;
@@ -27,34 +28,88 @@
         }
         .task-hover:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
         }
         .container {
-            backdrop-filter: blur(10px);
-            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
         #gameModal {
             display: none;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.6);
+            transition: background-color 0.3s ease;
+        }
+        .dark body {
+            background: linear-gradient(135deg, #2D3748 0%, #1A202C 100%);
+        }
+        .dark .container {
+            background: rgba(45, 55, 72, 0.9);
+            color: #E2E8F0;
+        }
+        .dark .task-hover:hover {
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
+        .dark input, .dark button {
+            background: #4A5568;
+            color: #E2E8F0;
+            border-color: #718096;
+        }
+        .dark input:focus {
+            border-color: #6366F1;
+            ring-color: #6366F1;
+        }
+        .dark #clock, .dark h1, .dark .task-text {
+            color: #E2E8F0;
+        }
+        .dark .game-modal {
+            background: #2D3748;
+            color: #E2E8F0;
+        }
+        .toggle-btn {
+            position: relative;
+            width: 48px;
+            height: 24px;
+            background: #D1D5DB;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .toggle-btn::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: #FFFFFF;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+        .dark .toggle-btn {
+            background: #6366F1;
+        }
+        .dark .toggle-btn::after {
+            transform: translateX(24px);
         }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
-    <div class="container rounded-2xl shadow-2xl w-full max-w-lg p-8">
-        <!-- Clock -->
-        <div class="text-center mb-6">
+<body class="min-h-screen flex items-center justify-center p-6">
+    <div class="container rounded-3xl shadow-2xl w-full max-w-lg p-10">
+        <!-- Clock and Dark Mode Toggle -->
+        <div class="flex justify-between items-center mb-8">
             <div id="clock" class="text-2xl font-semibold text-gray-900"></div>
+            <div class="toggle-btn" onclick="toggleDarkMode()"></div>
         </div>
 
-        <h1 class="text-3xl font-bold text-gray-900 mb-8 text-center">To-Do List</h1>
+        <h1 class="text-4xl font-bold text-gray-900 mb-10 text-center">To-Do List</h1>
         
         <!-- Input Form -->
-        <div class="flex mb-8">
+        <div class="flex mb-10">
             <input 
                 type="text" 
                 id="taskInput" 
                 placeholder="Add a new task..." 
-                class="flex-1 p-4 rounded-l-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm"
+                class="flex-1 p-4 rounded-l-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm transition"
             >
             <button 
                 onclick="addTask()" 
@@ -70,26 +125,26 @@
 
     <!-- Game Modal -->
     <div id="gameModal" class="fixed inset-0 flex items-center justify-center">
-        <div class="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
-            <h2 class="text-xl font-bold text-gray-900 mb-4">🎉 Number Guessing Game</h2>
-            <p class="text-gray-600 mb-4">All tasks done! Guess a number between 1 and 100.</p>
+        <div class="game-modal bg-white rounded-xl p-8 w-full max-w-sm shadow-2xl">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">🎉 Number Guessing Game</h2>
+            <p class="text-gray-600 mb-6">All tasks done! Guess a number between 1 and 100.</p>
             <input 
                 type="number" 
                 id="guessInput" 
                 placeholder="Your guess" 
-                class="w-full p-3 mb-4 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                class="w-full p-3 mb-6 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white transition"
             >
-            <p id="gameFeedback" class="text-gray-600 mb-4"></p>
-            <div class="flex justify-end space-x-3">
+            <p id="gameFeedback" class="text-gray-600 mb-6"></p>
+            <div class="flex justify-end space-x-4">
                 <button 
                     onclick="makeGuess()" 
-                    class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+                    class="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition font-medium"
                 >
                     Guess
                 </button>
                 <button 
                     onclick="closeGame()" 
-                    class="bg-gray-300 text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-400 transition"
+                    class="bg-gray-300 text-gray-900 px-5 py-2 rounded-lg hover:bg-gray-400 transition font-medium"
                 >
                     Close
                 </button>
@@ -98,10 +153,20 @@
     </div>
 
     <script>
-        // Load tasks from localStorage
+        // Load tasks and theme from localStorage
         let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        let isDarkMode = JSON.parse(localStorage.getItem('darkMode')) || false;
         let gameNumber = Math.floor(Math.random() * 100) + 1;
         let attempts = 0;
+
+        // Apply theme on load
+        document.addEventListener('DOMContentLoaded', () => {
+            if (isDarkMode) {
+                document.body.classList.add('dark');
+            }
+            renderTasks();
+            updateClock();
+        });
 
         // Clock functionality
         function updateClock() {
@@ -110,12 +175,13 @@
             document.getElementById('clock').textContent = timeString;
         }
         setInterval(updateClock, 1000);
-        updateClock();
 
-        // Render tasks on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            renderTasks();
-        });
+        // Dark mode toggle
+        function toggleDarkMode() {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('dark');
+            localStorage.setItem('darkMode', JSON.stringify(isDarkMode));
+        }
 
         function addTask() {
             const taskInput = document.getElementById('taskInput');
@@ -163,7 +229,7 @@
 
             tasks.forEach(task => {
                 const li = document.createElement('li');
-                li.className = 'flex items-center justify-between p-4 bg-white rounded-xl shadow-sm task-enter task-hover transition duration-200';
+                li.className = 'flex items-center justify-between p-4 bg-white dark:bg-gray-700 rounded-xl shadow-sm task-enter task-hover transition duration-200';
                 
                 li.innerHTML = `
                     <div class="flex items-center">
@@ -173,13 +239,13 @@
                             onchange="toggleTask(${task.id})"
                             class="h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer"
                         >
-                        <span class="ml-3 text-lg ${task.completed ? 'line-through text-gray-400' : 'text-gray-900'}">
+                        <span class="ml-3 text-lg task-text ${task.completed ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-gray-200'}">
                             ${task.text}
                         </span>
                     </div>
                     <button 
                         onclick="deleteTask(${task.id})"
-                        class="text-red-500 hover:text-red-600 font-medium transition"
+                        class="text-red-500 hover:text-red-600 dark:hover:text-red-400 font-medium transition"
                     >
                         Delete
                     </button>
@@ -204,16 +270,19 @@
 
             if (isNaN(guess) || guess < 1 || guess > 100) {
                 feedback.textContent = 'Please enter a number between 1 and 100!';
+                feedback.className = 'text-red-500 dark:text-red-400 mb-6';
                 return;
             }
 
             if (guess === gameNumber) {
                 feedback.textContent = `Congratulations! You guessed it in ${attempts} attempts!`;
-                feedback.className = 'text-green-600 mb-4';
+                feedback.className = 'text-green-600 dark:text-green-400 mb-6';
             } else if (guess < gameNumber) {
                 feedback.textContent = 'Too low! Try a higher number.';
+                feedback.className = 'text-gray-600 dark:text-gray-400 mb-6';
             } else {
                 feedback.textContent = 'Too high! Try a lower number.';
+                feedback.className = 'text-gray-600 dark:text-gray-400 mb-6';
             }
 
             guessInput.value = '';
